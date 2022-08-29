@@ -14,21 +14,24 @@
  * @param columns - number of columns in the matrix
  * @return struct matrix* 
  */
-struct matrix * matrix_create(int rows, int columns)
+struct matrix * matrix_create(int depth, int rows, int columns)
 {
     struct matrix * result = malloc(sizeof(struct matrix));
     double * contents = malloc((rows*columns)*sizeof(double));
     double ** con_ptr = malloc(sizeof(double *));
     *con_ptr = contents;
-    int * dims = malloc(2*sizeof(int));
+    int * dims = malloc(3*sizeof(int));
     dims[0] = columns;
     dims[1] = rows;
+    dims[2] = depth;
 
     result->columns = dims;
     dims++;
     result->rows = dims;
+    dims++;
+    result->depth = dims;
     result->value = con_ptr;
-    return;
+    return result;
 }
 
 /**
@@ -40,38 +43,51 @@ void matrix_transpose(struct matrix * mat)
 {
     int rows = *mat->rows;
     int cols = *mat->columns;
+    int depth = *mat->depth;
     *mat->rows = cols;
     *mat->columns = rows;
     double temp;
     double * val = *mat->value;
-    for(int i = 0; i < rows; i++)
+    for(int d = 0; d < depth; d++)
     {
-        for(int j = 0; j < i; j++)
-        {
-            temp = val[i*cols+j];
-            val[i*cols+j] = val[j*cols+i];
-            val[j*cols+i] = temp;
+        for(int i = 0; i < rows; i++)
+        {   
+            for(int j = 0; j < i; j++)
+            {
+                temp = val[i*cols+j];
+                val[i*cols+j] = val[j*cols+i];
+                val[j*cols+i] = temp;
+            }
         }
-    }
+        val += (rows*cols);
+    }   
 }
 
 void matrix_dotproduct(struct matrix * mat1, struct matrix * mat2, struct matrix * result)
 {
     *result->rows = *mat1->rows;
     *result->columns = *mat2->columns;
-
-    if(*mat1->columns == *mat2->rows)
+    int rows = *result->rows;
+    int cols = *result->columns;
+    double * val_ptr =  *result->value;
+    double * mat1_ptr = *(*mat1).value;
+    double * mat2_ptr = *mat2->value;
+    if(*mat1->columns == *mat2->rows && *mat1->depth == *mat2->depth)
     {
-        for(int i = 0; i < *mat1->rows; i++)
+        for(int d = 0; d < *mat1->depth; d++)
         {
-            for(int j = 0; j < *mat2->columns; j++)
+            for(int i = 0; i < *mat1->rows; i++)
             {
-                result->value[i][j] = 0;
-                for(int k = 0; k < *mat2->rows; k++)
+                for(int j = 0; j < *mat2->columns; j++)
                 {
-                    result->value[i][j] += (mat1->value[i][k]) * (mat2->value[k][j]);
+                    val_ptr[i*rows+j] = 0;
+                    for(int k = 0; k < *mat2->rows; k++)
+                    {
+                        val_ptr[i*rows+j] += mat1_ptr[i*rows+k] * mat2_ptr[k*cols+j];
+                    }
                 }
             }
+            val_ptr += (*result->rows)*(*result->columns);
         }
     }
     else
@@ -87,6 +103,7 @@ void matrix_free(struct matrix * mat)
     free(mat->value);
     free(mat->columns);
     free(mat->rows);
+    free(mat->depth);
     return;
 
 }
