@@ -1,6 +1,6 @@
 struct matrix
 {
-    double ** value;
+    float ** value;
     int * rows;
     int * columns;
     int * depth;

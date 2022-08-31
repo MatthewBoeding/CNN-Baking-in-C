@@ -7,10 +7,10 @@ void matrix_test(depth, rows, columns)
     struct matrix * mat2 = matrix_create(depth, rows, columns);
     struct matrix * result = matrix_create(depth, rows, columns);
 
-    double * current = *mat->value;
-    double * current2 = *mat2->value;
+    float * current = *mat->value;
+    float * current2 = *mat2->value;
     int value_count = rows * columns;
-    double inc_value = 1.1;
+    float inc_value = 1.1;
     int i = 0;
     while(i < (depth*rows*columns))
     {

@@ -17,8 +17,8 @@
 struct matrix * matrix_create(int depth, int rows, int columns)
 {
     struct matrix * result = malloc(sizeof(struct matrix));
-    double * contents = malloc((rows*columns)*sizeof(double));
-    double ** con_ptr = malloc(sizeof(double *));
+    float * contents = malloc((rows*columns)*sizeof(float));
+    float ** con_ptr = malloc(sizeof(float *));
     *con_ptr = contents;
     int * dims = malloc(3*sizeof(int));
     dims[0] = columns;
@@ -46,8 +46,8 @@ void matrix_transpose(struct matrix * mat)
     int depth = *mat->depth;
     *mat->rows = cols;
     *mat->columns = rows;
-    double temp;
-    double * val = *mat->value;
+    float temp;
+    float * val = *mat->value;
     for(int d = 0; d < depth; d++)
     {
         for(int i = 0; i < rows; i++)
@@ -75,9 +75,9 @@ void matrix_dotproduct(struct matrix * mat1, struct matrix * mat2, struct matrix
     *result->columns = *mat2->columns;
     int rows = *result->rows;
     int cols = *result->columns;
-    double * val_ptr =  *result->value;
-    double * mat1_ptr = *(*mat1).value;
-    double * mat2_ptr = *mat2->value;
+    float * val_ptr =  *result->value;
+    float * mat1_ptr = *(*mat1).value;
+    float * mat2_ptr = *mat2->value;
     if(*mat1->columns == *mat2->rows && *mat1->depth == *mat2->depth)
     {
         for(int d = 0; d < *mat1->depth; d++)
@@ -109,7 +109,7 @@ void matrix_dotproduct(struct matrix * mat1, struct matrix * mat2, struct matrix
  */
 void matrix_free(struct matrix * mat)
 {
-    double * ptr_val = *mat->value;
+    float * ptr_val = *mat->value;
     free(ptr_val);
     free(mat->value);
     free(mat->columns);
@@ -123,7 +123,7 @@ void matrix_free(struct matrix * mat)
  *  assume that all matrices have been malloc'd and stride = 1
  * @param input - must be larget than kernel with same depth
  * @param kernel - must be smaller than input with same depth
- * @param output - 
+ * @param output - convolution output
  */
 void matrix_convolution(struct matrix * input, struct matrix * kernel, struct matrix * output)
 {
@@ -133,7 +133,7 @@ void matrix_convolution(struct matrix * input, struct matrix * kernel, struct ma
     }
     else
     {
-        double value = 0;
+        float value = 0;
         int iterations = *output->rows+*output->columns;
         int iterations_per_row = *input->columns - *kernel->columns + 1;
         int row_offset, col_offset;
@@ -153,16 +153,44 @@ void matrix_convolution(struct matrix * input, struct matrix * kernel, struct ma
         }
     }
 }
-
+/**
+ * @brief performs elementwise addition on 2 matrices for scalar see
+ *  matrix_additionscalar or scalar to matrix. 
+ * @param mat1 - first input matrix must be same size as mat2
+ * @param mat2 - second input matrix
+ * @param result - addition output
+ */
 void matrix_addition(struct matrix * mat1, struct matrix * mat2, struct matrix * result)
 {
-
+    if(*mat1->rows == *mat2->rows && *mat1->columns == *mat2->columns && *mat1->depth == *mat2->depth)
+    {
+        for(int d = 0; d < *mat1->depth; d++)
+        {
+            for(int r = 0; r < *mat1->rows; r++)
+            {
+                for(int c = 0; c < *mat1->columns; c++)
+                {
+                    int index = d*(*mat1->rows * *mat1->columns) + r* (*mat1->columns) + c;
+                    *result->value[index] = *mat1->value[index] + *mat2->value[index];
+                }
+            }
+        }
+    }
 }
 
-/* Perhaps for later
-void matrix_crossproduct(struct matrix * mat1, struct matrix * mat2, struct matrix * result)
+void matrix_multiplicationscalar(struct matrix * mat1, int scalar)
 {
 
 
 }
-*/
+
+void matrix_additionscalar(struct matrix * mat1, int scalar)
+{
+
+}
+
+void matrix_negate(struct matrix * mat1)
+{
+
+}
+
