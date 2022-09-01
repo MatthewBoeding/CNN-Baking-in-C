@@ -178,19 +178,57 @@ void matrix_addition(struct matrix * mat1, struct matrix * mat2, struct matrix *
     }
 }
 
+void matrix_subtraction(struct matrix * mat1, struct matrix * mat2, struct matrix * result)
+{
+    if(*mat1->rows == *mat2->rows && *mat1->columns == *mat2->columns && *mat1->depth == *mat2->depth)
+    {
+        for(int d = 0; d < *mat1->depth; d++)
+        {
+            for(int r = 0; r < *mat1->rows; r++)
+            {
+                for(int c = 0; c < *mat1->columns; c++)
+                {
+                    int index = d*(*mat1->rows * *mat1->columns) + r* (*mat1->columns) + c;
+                    *result->value[index] = *mat1->value[index] - *mat2->value[index];
+                }
+            }
+        }
+    }
+}
+
 void matrix_multiplicationscalar(struct matrix * mat1, int scalar)
 {
-
-
+    int depth, rows, cols;
+    depth = *mat1->depth;
+    rows = *mat1->rows;
+    cols = *mat1->columns;
+    for(int d = 0; d < depth; d++)
+    {
+        for (int r = 0; r<rows; r++)
+        {
+            for(int c = 0; c < cols; c++)
+            {
+                *mat1->value[d*(rows*cols)+(r*cols)+c] = *mat1->value[d*(rows*cols)+(r*cols)+c] * scalar;
+            }
+        }
+    }
 }
 
 void matrix_additionscalar(struct matrix * mat1, int scalar)
 {
-
-}
-
-void matrix_negate(struct matrix * mat1)
-{
-
+    int depth, rows, cols;
+    depth = *mat1->depth;
+    rows = *mat1->rows;
+    cols = *mat1->columns;
+    for(int d = 0; d < depth; d++)
+    {
+        for (int r = 0; r<rows; r++)
+        {
+            for(int c = 0; c < cols; c++)
+            {
+                *mat1->value[d*(rows*cols)+(r*cols)+c] = *mat1->value[d*(rows*cols)+(r*cols)+c] + scalar;
+            }
+        }
+    }
 }
 
