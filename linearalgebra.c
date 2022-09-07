@@ -135,22 +135,24 @@ void matrix_convolution(struct matrix * input, struct matrix * kernel, struct ma
     else
     {
         float value = 0;
-        int iterations = (*output->rows+*output->columns) / stride;
+        int iterations = (*output->rows * *output->columns);
         int iterations_per_row = (*input->columns - *kernel->columns) / stride + 1;
         int row_offset, col_offset;
         for(int i = 0; i < iterations; i++)
         {
-            row_offset = iterations / iterations_per_row;
-            col_offset = iterations % iterations_per_row;
+            row_offset = (i / iterations_per_row) * stride;
+            col_offset = (i % iterations_per_row) * stride;
             value = 0;
-            for(int r = 0; r < kernel->rows; r+stride)
+            for(int r = 0; r < *kernel->rows; r++)
             {
-                for(int c = 0; c < kernel->columns; c+stride)
+                for(int c = 0; c < *kernel->columns; c++)
                 {
-                    value += *kernel->value[r*(*kernel->columns)+c] * *input->value[(r+row_offset)*(*kernel->columns)+c+col_offset];
+                    value += (*kernel->value)[r*(*kernel->columns)+c] * (*input->value)[(r+row_offset)*(*input->columns)+c+col_offset];
+                    float h1 = (*input->value)[(r+row_offset)*(*input->columns)+c+col_offset];
+                    float h2 =  (*kernel->value)[r*(*kernel->columns)+c];
                 }
             }
-            *output->value[i]=value;
+            (*output->value)[i]=value;
         }
     }
 }

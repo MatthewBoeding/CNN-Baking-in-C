@@ -2,7 +2,7 @@
 #include "linearalgebra.h"
 /* TODO:
     Linear algebra: 
-    Unit test Convolution, multiplication, and Addition
+        (about done) Unit test Convolution, multiplication, and Addition
     Convolutional layer: 
         Kernel, Batch Normalization, Relu, Loss function (gradient descent?)
         feed forward vs backward
@@ -11,8 +11,42 @@
     Send outputs:
 
 */
+void matrix_convolution_test(int depth, int kernel, int ifmap, int stride)
+{
+    struct matrix * k = matrix_create(depth, kernel, kernel);
+    struct matrix * imap = matrix_create(depth, ifmap, ifmap);
+    int ofmap = (ifmap-kernel+stride)/stride;
+    struct matrix * omap = matrix_create(depth, ofmap, ofmap);
+    float kern[9] = {0,1,0,1,1,1,0,1,0};
+    float map[25] = {0,1,2,3,2,1,2,2,2,0,0,1,0,1,3,1,2,2,1,0,0,1,0,3,1};
+    for(int d = 0; d < depth; d++)
+    {
+        for(int kr = 0; kr < kernel*kernel; kr++)
+        {
+            (*k->value)[kr] = kern[kr%9];
+        }
+        float * i_ptr =  *imap->value;
+        for(int i = 0; i < ifmap*ifmap; i++)
+        {
+            (*imap->value)[i] = map[i%25];
+        }
+    }
+    matrix_convolution(imap, k, omap, stride);
+    printf("after convolution:\n");
+    for(int d = 0; d < depth; d++)
+    {
+        for(int r = 0; r < *omap->rows; r++)
+        {
+            for(int c = 0; c < *omap->columns; c++)
+            {
+                printf("%f ", (*omap->value)[(r * *(omap->columns))+c]);
+            }
+            printf("\n");
+        }
+    }
+}
 
-void matrix_test(depth, rows, columns)
+void matrix_product_test(depth, rows, columns)
 {
     struct matrix * mat = matrix_create(depth, rows, columns);
     struct matrix * mat2 = matrix_create(depth, rows, columns);
@@ -94,7 +128,10 @@ int main()
     int rows = 3;
     int columns = 3;
     int depth = 1;
-    matrix_test(depth, rows, columns);
-    matrix_test(1,2,2);
-    matrix_test(1,4,4);
+    matrix_product_test(depth, rows, columns);
+    matrix_product_test(1,2,2);
+    matrix_product_test(1,4,4);
+
+    matrix_convolution_test(1,3,5,1);
+    matrix_convolution_test(1,3,5,2);
 }
