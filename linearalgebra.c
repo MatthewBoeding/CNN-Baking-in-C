@@ -124,8 +124,9 @@ void matrix_free(struct matrix * mat)
  * @param input - must be larget than kernel with same depth
  * @param kernel - must be smaller than input with same depth
  * @param output - convolution output
+ * @param stride - stride length of convolution
  */
-void matrix_convolution(struct matrix * input, struct matrix * kernel, struct matrix * output)
+void matrix_convolution(struct matrix * input, struct matrix * kernel, struct matrix * output, int stride)
 {
     if(*kernel->rows > *input->rows || *kernel->columns > *input->columns || *input->depth != *kernel->depth)
     {
@@ -134,17 +135,17 @@ void matrix_convolution(struct matrix * input, struct matrix * kernel, struct ma
     else
     {
         float value = 0;
-        int iterations = *output->rows+*output->columns;
-        int iterations_per_row = *input->columns - *kernel->columns + 1;
+        int iterations = (*output->rows+*output->columns) / stride;
+        int iterations_per_row = (*input->columns - *kernel->columns) / stride + 1;
         int row_offset, col_offset;
         for(int i = 0; i < iterations; i++)
         {
             row_offset = iterations / iterations_per_row;
             col_offset = iterations % iterations_per_row;
             value = 0;
-            for(int r = 0; r < kernel->rows; r++)
+            for(int r = 0; r < kernel->rows; r+stride)
             {
-                for(int c = 0; c < kernel->columns; c++)
+                for(int c = 0; c < kernel->columns; c+stride)
                 {
                     value += *kernel->value[r*(*kernel->columns)+c] * *input->value[(r+row_offset)*(*kernel->columns)+c+col_offset];
                 }

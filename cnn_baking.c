@@ -1,5 +1,16 @@
 #include <stdio.h>
 #include "linearalgebra.h"
+/* TODO:
+    Linear algebra: 
+    Unit test Convolution, multiplication, and Addition
+    Convolutional layer: 
+        Kernel, Batch Normalization, Relu, Loss function (gradient descent?)
+        feed forward vs backward
+    Read inputs:
+
+    Send outputs:
+
+*/
 
 void matrix_test(depth, rows, columns)
 {
