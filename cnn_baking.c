@@ -1,11 +1,13 @@
 #include <stdio.h>
-#include "linearalgebra.h"
+#include "convolutional_layer.h"
+//#include "linearalgebra.h"
 /* TODO:
     Linear algebra: 
         (about done) Unit test Convolution, multiplication, and Addition
     Convolutional layer: 
         Kernel, Batch Normalization, Relu, Loss function (gradient descent?)
         feed forward vs backward
+
     Read inputs:
 
     Send outputs:
