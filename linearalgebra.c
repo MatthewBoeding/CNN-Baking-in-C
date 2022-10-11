@@ -126,7 +126,7 @@ void matrix_free(struct matrix * mat)
  * @param output - convolution output
  * @param stride - stride length of convolution
  */
-void matrix_convolution(struct matrix * input, struct matrix * kernel, struct matrix * output, int stride)
+void matrix_convolution_valid(struct matrix * input, struct matrix * kernel, struct matrix * output, int stride)
 {
     if(*kernel->rows > *input->rows || *kernel->columns > *input->columns || *input->depth != *kernel->depth)
     {
@@ -156,6 +156,70 @@ void matrix_convolution(struct matrix * input, struct matrix * kernel, struct ma
         }
     }
 }
+
+void matrix_convolution_full(struct matrix * input, struct matrix * kernel, struct matrix * output, int stride)
+{
+    if(*kernel->rows > *input->rows || *kernel->columns > *input->columns || *input->depth != *kernel->depth)
+    {
+     printf("Kernel is too large for input matrix");   
+    }
+    else if(*output->rows != (*input->rows + *kernel->rows - 1) || (*output->columns != (*input->columns + *kernel->columns - 1)))
+    {
+        printf("Output dimension does not match kernel and input filter for full convolution");
+    }
+    else
+    {
+        float value = 0;
+        int iterations = (*output->rows * *output->columns);
+        int iterations_per_row = (*input->columns + *kernel->columns-1);
+        int row_offset, col_offset, curr_ops_row, curr_ops_col;
+        for(int i = 0; i < iterations; i++)
+        {
+            row_offset = 0;
+            col_offset = 0;
+            int active_row = (i / iterations_per_row);
+            int k = i % iterations_per_row;
+            if(k < *kernel->columns)
+            {
+                curr_ops_col = k;
+            }
+            else if(k >= *kernel->columns && k < (*input->columns - *kernel->columns + 1))
+            {
+                col_offset = k - *kernel->columns;
+                curr_ops_col = *kernel->columns;
+            }
+            else if(k > (*input->columns - *kernel->columns + 1))
+            {
+                col_offset = k - *kernel->columns;
+                curr_ops_col = *kernel->columns -(k - (*input->columns - *kernel->columns + 1));
+            }
+            if(active_row < *kernel->rows)
+            {
+                curr_ops_row = active_row + 1;
+            }
+            else if(active_row >= *kernel->rows && active_row < (*input->rows - *kernel->rows + 1))
+            {
+                row_offset = active_row - *kernel->rows;
+                curr_ops_row = *kernel->rows;
+            }
+            else if(active_row > (*input->columns - *kernel->columns + 1))
+            {
+                row_offset = active_row - *kernel->rows;
+                curr_ops_row = *kernel->rows - (active_row - (*input->columns - *kernel->columns + 1));
+            }
+            value = 0;
+            for(int r = 0; r < curr_ops_row; r++)
+            {
+                for(int c = 0; c < curr_ops_col; c++)
+                {
+                    value += (*kernel->value)[r*(*kernel->columns)+c] * (*input->value)[(r+row_offset)*(*input->columns)+c+col_offset];
+                }
+            }
+            (*output->value)[i]=value;
+        }
+    }
+}
+
 /**
  * @brief performs elementwise addition on 2 matrices for scalar see
  *  matrix_additionscalar or scalar to matrix. 

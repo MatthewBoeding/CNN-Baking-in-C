@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include "convolutional_layer.h"
-//#include "linearalgebra.h"
+//#include "convolutional_layer.h"
+#include "linearalgebra.h"
 /* TODO:
     Linear algebra: 
         (about done) Unit test Convolution, multiplication, and Addition
@@ -19,8 +19,8 @@ void matrix_convolution_test(int depth, int kernel, int ifmap, int stride)
     struct matrix * imap = matrix_create(depth, ifmap, ifmap);
     int ofmap = (ifmap-kernel+stride)/stride;
     struct matrix * omap = matrix_create(depth, ofmap, ofmap);
-    float kern[9] = {0,1,0,1,1,1,0,1,0};
-    float map[25] = {0,1,2,3,2,1,2,2,2,0,0,1,0,1,3,1,2,2,1,0,0,1,0,3,1};
+    float kern[9] = {1,0,1,0,1,0,1,0,1};
+    float map[16] = {1,2,4,3,2,1,3,5,3,2,1,6,2,3,4,9,};
     for(int d = 0; d < depth; d++)
     {
         for(int kr = 0; kr < kernel*kernel; kr++)
@@ -30,10 +30,10 @@ void matrix_convolution_test(int depth, int kernel, int ifmap, int stride)
         float * i_ptr =  *imap->value;
         for(int i = 0; i < ifmap*ifmap; i++)
         {
-            (*imap->value)[i] = map[i%25];
+            (*imap->value)[i] = map[i%16];
         }
     }
-    matrix_convolution(imap, k, omap, stride);
+    matrix_convolution_full(imap, k, omap, stride);
     printf("after convolution:\n");
     for(int d = 0; d < depth; d++)
     {
@@ -48,7 +48,7 @@ void matrix_convolution_test(int depth, int kernel, int ifmap, int stride)
     }
 }
 
-void matrix_product_test(depth, rows, columns)
+void matrix_product_test(int depth, int rows, int columns)
 {
     struct matrix * mat = matrix_create(depth, rows, columns);
     struct matrix * mat2 = matrix_create(depth, rows, columns);
@@ -127,13 +127,5 @@ void matrix_product_test(depth, rows, columns)
 
 int main()
 {
-    int rows = 3;
-    int columns = 3;
-    int depth = 1;
-    matrix_product_test(depth, rows, columns);
-    matrix_product_test(1,2,2);
-    matrix_product_test(1,4,4);
-
-    matrix_convolution_test(1,3,5,1);
-    matrix_convolution_test(1,3,5,2);
+    matrix_convolution_test(1,3,4,1);
 }
