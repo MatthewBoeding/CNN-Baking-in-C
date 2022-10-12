@@ -171,48 +171,60 @@ void matrix_convolution_full(struct matrix * input, struct matrix * kernel, stru
     {
         float value = 0;
         int iterations = (*output->rows * *output->columns);
+        printf("iterations: %i", iterations);
         int iterations_per_row = (*input->columns + *kernel->columns-1);
-        int row_offset, col_offset, curr_ops_row, curr_ops_col;
+        int row_offset, col_offset, curr_ops_row, curr_ops_col, start_loc_k;
         for(int i = 0; i < iterations; i++)
         {
             row_offset = 0;
             col_offset = 0;
             int active_row = (i / iterations_per_row);
             int k = i % iterations_per_row;
+            start_loc_k = (*kernel->columns)*(*kernel->rows)-1;
             if(k < *kernel->columns)
-            {
+            {   
+                col_offset = 0;
                 curr_ops_col = k;
             }
             else if(k >= *kernel->columns && k < (*input->columns - *kernel->columns + 1))
             {
-                col_offset = k - *kernel->columns;
+                col_offset = k - *kernel->columns + 1;
                 curr_ops_col = *kernel->columns;
+
             }
             else if(k > (*input->columns - *kernel->columns + 1))
             {
-                col_offset = k - *kernel->columns;
+                col_offset = k - *kernel->columns + 1;
                 curr_ops_col = *kernel->columns -(k - (*input->columns - *kernel->columns + 1));
+                start_loc_k -= (k-*kernel->columns);
             }
             if(active_row < *kernel->rows)
             {
-                curr_ops_row = active_row + 1;
+                row_offset = 0;
+                curr_ops_row = active_row;
             }
-            else if(active_row >= *kernel->rows && active_row < (*input->rows - *kernel->rows + 1))
+            else if(active_row >= *kernel->rows && active_row <= (*input->rows - *kernel->rows + 1))
             {
-                row_offset = active_row - *kernel->rows;
+                row_offset = active_row - *kernel->rows +1;
                 curr_ops_row = *kernel->rows;
             }
-            else if(active_row > (*input->columns - *kernel->columns + 1))
+            else if(active_row+*kernel->rows > *input->rows)
             {
-                row_offset = active_row - *kernel->rows;
+                row_offset = active_row - *kernel->rows+1;
                 curr_ops_row = *kernel->rows - (active_row - (*input->columns - *kernel->columns + 1));
+                start_loc_k -= (*kernel->columns)*(active_row+*kernel->rows - *input->rows - 2);
             }
             value = 0;
-            for(int r = 0; r < curr_ops_row; r++)
+            //printf("\n[%i,%i]\n", curr_ops_row, curr_ops_col);
+
+            for(int r = 0; r <= curr_ops_row; r++)
             {
-                for(int c = 0; c < curr_ops_col; c++)
+                for(int c = 0; c <= curr_ops_col; c++)
                 {
-                    value += (*kernel->value)[r*(*kernel->columns)+c] * (*input->value)[(r+row_offset)*(*input->columns)+c+col_offset];
+                    value += (*kernel->value)[start_loc_k - c -(*kernel->columns)*r] * (*input->value)[(row_offset+curr_ops_row-r)*(*input->rows)+(col_offset + curr_ops_col - c)];
+                    int loc = start_loc_k - c -(*kernel->columns)*r;
+                    int loc2 = (row_offset+curr_ops_row-r)*(*input->rows)+(col_offset + curr_ops_col - c);
+                    //printf("%i * %i ->", loc, loc2);
                 }
             }
             (*output->value)[i]=value;

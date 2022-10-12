@@ -1,6 +1,6 @@
 #include <stdio.h>
-//#include "convolutional_layer.h"
-#include "linearalgebra.h"
+#include "convolutional_layer.h"
+//#include "linearalgebra.h"
 /* TODO:
     Linear algebra: 
         (about done) Unit test Convolution, multiplication, and Addition
@@ -17,7 +17,8 @@ void matrix_convolution_test(int depth, int kernel, int ifmap, int stride)
 {
     struct matrix * k = matrix_create(depth, kernel, kernel);
     struct matrix * imap = matrix_create(depth, ifmap, ifmap);
-    int ofmap = (ifmap-kernel+stride)/stride;
+    int ofmap = (ifmap+kernel-1);
+    // valid conv = int ofmap = (ifmap-kernel+stride)/stride;
     struct matrix * omap = matrix_create(depth, ofmap, ofmap);
     float kern[9] = {1,0,1,0,1,0,1,0,1};
     float map[16] = {1,2,4,3,2,1,3,5,3,2,1,6,2,3,4,9,};
@@ -46,6 +47,9 @@ void matrix_convolution_test(int depth, int kernel, int ifmap, int stride)
             printf("\n");
         }
     }
+    matrix_free(ifmap);
+    matrix_free(omap);
+    matrix_free(k);
 }
 
 void matrix_product_test(int depth, int rows, int columns)
